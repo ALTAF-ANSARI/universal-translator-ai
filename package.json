@@ -1,0 +1,10 @@
+{
+  "name": "translator-app-root",
+  "version": "1.0.0",
+  "description": "Full stack translator app",
+  "scripts": {
+    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "build": "cd frontend && npm install && npm run build",
+    "start": "cd backend && node server.js"
+  }
+}

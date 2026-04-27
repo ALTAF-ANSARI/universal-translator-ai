@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: translator-app
+    env: node
+    plan: free
+    buildCommand: npm run build && cd backend && npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: LIBRETRANSLATE_URL
+        value: https://libretranslate.com
+      - key: LIBRETRANSLATE_API_KEY
+        sync: false
