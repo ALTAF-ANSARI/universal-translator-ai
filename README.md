@@ -14,7 +14,7 @@ A full-stack web application for translating text with regional phrase support, 
 | Backend | Node.js + Express |
 | Database | MongoDB (Mongoose) |
 | Auth | JWT (JSON Web Tokens) |
-| Translation | LibreTranslate API |
+| Translation | Google Gemini API |
 
 ## ✨ Features
 
@@ -61,7 +61,7 @@ Backend runs on http://localhost:5000
 PORT=5000
 MONGO_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/translatorDB
 JWT_SECRET=your_secret_key_here
-LIBRETRANSLATE_URL=https://libretranslate.com
+GOOGLE_API_KEY=your_google_studio_api_key_here
 ```
 
 > Get a free MongoDB Atlas cluster at: https://mongodb.com/atlas
@@ -112,7 +112,7 @@ git push -u origin main
 3. Set root directory: `backend`
 4. Build command: `npm install`
 5. Start command: `node server.js`
-6. Add environment variables (MONGO_URI, JWT_SECRET, LIBRETRANSLATE_URL)
+6. Add environment variables (MONGO_URI, JWT_SECRET, GOOGLE_API_KEY)
 7. Deploy!
 
 ### Frontend → Vercel (free)

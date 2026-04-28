@@ -1,8 +1,11 @@
 const express = require('express');
-const axios = require('axios');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { protect } = require('../middleware/auth');
 const History = require('../models/History');
+
 const router = express.Router();
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
 // POST /api/translate
 router.post('/', protect, async (req, res) => {
@@ -11,20 +14,16 @@ router.post('/', protect, async (req, res) => {
     if (!text || !source || !target)
       return res.status(400).json({ message: 'text, source and target are required' });
 
-    // Use MyMemory free API (no API key required, 5000 chars/day free)
-    const langPair = `${source}|${target}`;
-    const response = await axios.get('https://api.mymemory.translated.net/get', {
-      params: {
-        q: text,
-        langpair: langPair
-      }
-    });
+    // Using Google Gemini API for translation
+    const prompt = `Translate the following text from ${source} to ${target}: "${text}". Only return the translated text without any explanations or additional formatting.`;
+    
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const translatedText = response.text().trim();
 
-    if (response.data.responseStatus !== 200) {
-      throw new Error(response.data.responseDetails || 'Translation failed');
+    if (!translatedText) {
+      throw new Error('Translation failed: Empty response from AI');
     }
-
-    const translatedText = response.data.responseData.translatedText;
 
     // Save to history
     await History.create({
@@ -37,8 +36,8 @@ router.post('/', protect, async (req, res) => {
 
     res.json({ translatedText });
   } catch (err) {
-    const msg = err.response?.data?.responseDetails || err.message;
-    res.status(500).json({ message: `Translation failed: ${msg}` });
+    console.error('Translation Error:', err);
+    res.status(500).json({ message: `Translation failed: ${err.message}` });
   }
 });
 
