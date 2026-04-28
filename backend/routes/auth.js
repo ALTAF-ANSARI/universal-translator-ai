@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { validate } = require('deep-email-validator');
 const router = express.Router();
 
 const signToken = (id) =>
@@ -12,6 +13,32 @@ router.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
     if (!name || !email || !password)
       return res.status(400).json({ message: 'All fields required' });
+
+    // 1. Basic Gmail format check
+    if (!email.toLowerCase().endsWith('@gmail.com')) {
+      return res.status(400).json({ message: 'Only @gmail.com addresses are allowed to register.' });
+    }
+
+    // 2. Deep validation to check if the email is active/real
+    const validation = await validate({
+      email: email,
+      validateSMTP: true, // This checks if the email actually exists on Gmail's servers
+    });
+
+    if (!validation.valid) {
+      // If SMTP check failed but it's a connection error (common in some environments), 
+      // we might still allow it if other checks pass, but for "active" requirement:
+      if (validation.reason === 'smtp' && validation.validators.smtp.reason && validation.validators.smtp.reason.includes('EACCES')) {
+        // Port 25 blocked, we can't verify existence via SMTP here.
+        // We'll proceed but log it. In a real server, port 25 should be open or use an API.
+        console.warn('SMTP verification skipped due to port 25 restriction.');
+      } else {
+        return res.status(400).json({ 
+          message: 'Please provide a valid, active Gmail address. Dummy emails are not allowed.',
+          details: validation.reason 
+        });
+      }
+    }
 
     const exists = await User.findOne({ email });
     if (exists) return res.status(400).json({ message: 'Email already registered' });
