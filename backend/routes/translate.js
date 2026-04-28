@@ -4,6 +4,12 @@ const { protect } = require('../middleware/auth');
 const History = require('../models/History');
 
 const router = express.Router();
+if (!process.env.GOOGLE_API_KEY) {
+  console.error('❌ GOOGLE_API_KEY is missing from environment variables!');
+} else {
+  console.log('✅ GOOGLE_API_KEY loaded successfully');
+}
+
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
